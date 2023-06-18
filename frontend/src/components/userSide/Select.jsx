@@ -154,6 +154,10 @@ export default function SelectAutoWidth() {
     }
   };
 
+  const handleStatClick = ()=>{
+    
+  }
+
   const handleModalClose = () => {
     setOpenModal(false);
   };
@@ -214,6 +218,17 @@ export default function SelectAutoWidth() {
         {error ? (
           <Alert severity="warning">
             Permission is not allowed to change other's data
+          </Alert>
+        ) : (
+          ""
+        )}
+      </Alert>
+      <Alert severity="info" sx={{ width: "90%", margin: "0 auto" }}>
+        Parameter List
+        <Button onClick={handleStatClick}>Click Here</Button>
+        {error ? (
+          <Alert severity="warning">
+            Permission is not allowed to see Parameter data
           </Alert>
         ) : (
           ""
@@ -348,6 +363,7 @@ export default function SelectAutoWidth() {
           </TableContainer>
         </Container>
       </Modal>
+
     </div>
   );
 }

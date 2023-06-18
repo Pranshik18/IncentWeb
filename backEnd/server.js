@@ -101,6 +101,8 @@ app.delete("/employee/:id",async(req,res)=>{
   }
 })
 
+
+
 //Connecting with the server
 mongoose.set("strictQuery", false);
 mongoose

@@ -26,27 +26,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
-const defaultTheme = createTheme();
-
-export default function CreateUser() {
+function CreateUser() {
   const [role, setRole] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -57,6 +37,7 @@ export default function CreateUser() {
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [checkedItems, setCheckedItems] = useState([]);
+  const [cardPermissions, setCardPermissions] = useState([]);
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -74,11 +55,19 @@ export default function CreateUser() {
   };
 
   const handleCheckboxChange = (event) => {
-    const { value, checked } = event.target;
-    if (checked) {
-      setCheckedItems([...checkedItems, value]);
-    } else {
-      setCheckedItems(checkedItems.filter((item) => item !== value));
+    const { name, value, checked } = event.target;
+    if (name === 'permissions') {
+      if (checked) {
+        setCheckedItems([...checkedItems, value]);
+      } else {
+        setCheckedItems(checkedItems.filter((item) => item !== value));
+      }
+    } else if (name === 'cardPermissions') {
+      if (checked) {
+        setCardPermissions([...cardPermissions, value]);
+      } else {
+        setCardPermissions(cardPermissions.filter((item) => item !== value));
+      }
     }
   };
 
@@ -92,41 +81,37 @@ export default function CreateUser() {
         emp_Stats: emp_Stat,
         emp_role: role,
         permissions: checkedItems,
+        card_permissions: cardPermissions,
       })
       .then(() => {
         setOpen(true);
         navigate(-1);
       });
   };
-  console.log(checkedItems);
+
   return (
-    <ThemeProvider theme={defaultTheme}>
-    <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <IconButton
-          color="inherit"
-          onClick={handleOpenModal}
-          sx={{ position: 'absolute', top: 0, right: 0 }}
+    <ThemeProvider theme={createTheme()}>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
         >
-          <SettingsIcon />
-        </IconButton>
-        <Typography component="h1" variant="h5">
-          Add User
-        </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1 }}
+          <IconButton
+            color="inherit"
+            onClick={handleOpenModal}
+            sx={{ position: 'absolute', top: 0, right: 0 }}
           >
+            <SettingsIcon />
+          </IconButton>
+          <Typography component="h1" variant="h5">
+            Add User
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
@@ -147,7 +132,6 @@ export default function CreateUser() {
               label="Email Address"
               name="email"
               autoComplete="email"
-              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -155,137 +139,197 @@ export default function CreateUser() {
               margin="normal"
               required
               fullWidth
-              name="password"
+              name="pass"
               label="Password"
               type="password"
-              id="password"
-              autoComplete="current-password"
+              id="pass"
+              autoComplete="new-password"
               value={pass}
               onChange={(e) => setPass(e.target.value)}
             />
-            <Box sx={{ minWidth: 120 }}>
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Role</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={role}
-          label="Role"
-          onChange={(e)=> setRole(e.target.value)}
-        >
-          <MenuItem value={"Team Lead"}>Team Lead</MenuItem>
-          <MenuItem value={"Associate Software Developer"}>Associate Software Developer</MenuItem>
-          <MenuItem value={"Software Trainee"}>Software Trainee</MenuItem>
-        </Select>
-      </FormControl>
-      <Stack spacing={2} sx={{ width: '100%' }}>
-              {checkedItems.length === 0 && (
-                <Alert severity="info">Please click on settings to add permissions</Alert>
-              )}
-              </Stack>
-    </Box>
-            
-            {error ? (
-              <Alert severity="error">
-                Wrong Credentials Please Try Again!
-              </Alert>
-            ) : (
-              ""
-            )}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Add
+            <FormControl fullWidth>
+              <InputLabel id="role-label">Role</InputLabel>
+              <Select
+                labelId="role-label"
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <MenuItem value="Team Lead">Team Lead</MenuItem>
+                <MenuItem value="Associate Software Developer">Associate Software Developer</MenuItem>
+                <MenuItem value="Software Trainee">Software Trainee</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl component="fieldset" sx={{ mt: 3 }}>
+              <Typography variant="subtitle2">Permissions:</Typography>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('create')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="create"
+                  />
+                }
+                label="Create"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('read')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="read"
+                  />
+                }
+                label="Read"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('update')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="update"
+                  />
+                }
+                label="Update"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('delete')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="delete"
+                  />
+                }
+                label="Delete"
+              />
+            </FormControl>
+            <FormControl component="fieldset" sx={{ mt: 3 }}>
+              <Typography variant="subtitle2">Card Permissions:</Typography>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={cardPermissions.includes('view')}
+                    onChange={handleCheckboxChange}
+                    name="cardPermissions"
+                    value="view"
+                  />
+                }
+                label="View"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={cardPermissions.includes('edit')}
+                    onChange={handleCheckboxChange}
+                    name="cardPermissions"
+                    value="edit"
+                  />
+                }
+                label="Edit"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={cardPermissions.includes('delete')}
+                    onChange={handleCheckboxChange}
+                    name="cardPermissions"
+                    value="delete"
+                  />
+                }
+                label="Delete"
+              />
+            </FormControl>
+            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+              Create User
             </Button>
           </Box>
-          <Modal open={openModal} onClose={handleCloseModal}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
-            boxShadow: 24,
-            p: 4,
-          }}
+        </Box>
+        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+          <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+            User created successfully!
+          </Alert>
+        </Snackbar>
+        <Modal
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
         >
-                    <FormControl fullWidth>
-            <InputLabel id="crud-checkbox-label">Permissions</InputLabel>
-            <Select
-              labelId="crud-checkbox-label"
-              id="crud-checkbox"
-              multiple
-              value={checkedItems}
-              onChange={handleCheckboxChange}
-              renderValue={(selected) => selected.join(', ')}
-            >
-              {/* ... */}
-            </Select>
-          </FormControl>
-          {/* Add checkboxes for each CRUD operation */}
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={checkedItems.includes('create')}
-                onChange={handleCheckboxChange}
-                value="create"
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 400,
+              bgcolor: 'background.paper',
+              border: '2px solid #000',
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <Typography variant="h6" id="modal-title" component="h2">
+              User Permissions
+            </Typography>
+            <Typography variant="body2" id="modal-description" sx={{ mt: 2 }}>
+              Configure user permissions here.
+            </Typography>
+            <FormControl component="fieldset" sx={{ mt: 3 }}>
+              <Typography variant="subtitle2">Permissions:</Typography>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('create')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="create"
+                  />
+                }
+                label="Create"
               />
-            }
-            label="Create"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={checkedItems.includes('read')}
-                onChange={handleCheckboxChange}
-                value="read"
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('read')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="read"
+                  />
+                }
+                label="Read"
               />
-            }
-            label="Read"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={checkedItems.includes('update')}
-                onChange={handleCheckboxChange}
-                value="update"
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('update')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="update"
+                  />
+                }
+                label="Update"
               />
-            }
-            label="Update"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={checkedItems.includes('delete')}
-                onChange={handleCheckboxChange}
-                value="delete"
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedItems.includes('delete')}
+                    onChange={handleCheckboxChange}
+                    name="permissions"
+                    value="delete"
+                  />
+                }
+                label="Delete"
               />
-            }
-            label="Delete"
-          />
-          <Button variant="contained" onClick={handleCloseModal} sx={{ mt: 2, mr: 2 }}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={handleSubmit} sx={{ mt: 2 }}>
-            Submit
-          </Button>
-        </Box>
-      </Modal>
-      <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-          User Added Successfully! Please Go back
-        </Alert>
-      </Snackbar>
-        </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
+            </FormControl>
+          </Box>
+        </Modal>
       </Container>
-
     </ThemeProvider>
   );
 }
+
+export default CreateUser;

@@ -7,7 +7,8 @@ const productSchema = mongoose.Schema(
     emp_pass : String,
     emp_Stats: Object,
     emp_role : String,
-    permissions : Array
+    permissions : Array,
+    card_permissions : Array
   }, {
     versionKey : false
   }
