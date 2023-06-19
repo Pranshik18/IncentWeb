@@ -40,6 +40,7 @@ const CardComponent = () => {
   const [data, setData] = useState([]);
   const [sliderValue, setSliderValue] = useState({});
   const [particularIndexData, setparticularIndexData] = useState({});
+  const [modifiedBy, setModifiedBy] = useState("Admin");
   const index = localStorage.getItem("index")
   const navigate = useNavigate();
 
@@ -59,7 +60,7 @@ const CardComponent = () => {
     const ValueArray = data.map((item) => ({
       StatType: item.statValue,
       UserValue: sliderValue[item.statRange] || 0,
-      StatRange : item.statRange
+      UserMaxValue : item.statRange || 0
     }));
     console.log(month);
     console.log(ValueArray);
@@ -72,7 +73,8 @@ const CardComponent = () => {
     
     const newValue = {
       ...particularIndexData,
-      emp_Stats: [...particularIndexData.emp_Stats , Value]
+      emp_Stats: [...particularIndexData.emp_Stats, Value],
+      modifiedBy:modifiedBy
     }
     console.log(newValue);
 

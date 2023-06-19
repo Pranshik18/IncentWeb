@@ -8,6 +8,7 @@ import LogIn from './components/userSide/UserLogin';
 import SpeedometerComponent from './components/userSide/userPerformance';
 import CardComponent from './components/adminSide/Card';
 import UserSideStats from './components/userSide/userStats';
+import UserSideCreateUser from './components/userSide/UserCreation';
 function App() {
   return (
     <BrowserRouter>
@@ -20,6 +21,7 @@ function App() {
       <Route path='/user/logIn' element={<LogIn />} />
       <Route path='/user/userPerformance' element={<SpeedometerComponent />} />
       <Route path='/user/userStats' element={<UserSideStats />} />
+      <Route path='/user/createUser' element={<UserSideCreateUser />} />
   </Routes>
     </BrowserRouter>
   );

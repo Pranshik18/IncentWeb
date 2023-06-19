@@ -26,6 +26,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useNavigate } from 'react-router-dom';
 import Modal from '@mui/material/Modal';
 import axios from 'axios';
+import { Alert } from '@mui/material';
 
 
 const style = {
@@ -87,7 +88,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-const headers = ['Role', 'Name', 'Email', 'Password', 'Stats', 'Delete'];
+const headers = ['Role', 'Name', 'Email', 'Password', 'Created By', 'LastModifiedBy', 'Stats', 'Delete'];
 
 const TableComponent = () => {
   const [userData, setUserData] = useState([]);
@@ -97,14 +98,19 @@ const TableComponent = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-  const [modalopen, setModalOpen] = useState(false);
   const handlemodalOpen = () => setOpen(true);
   const [statRange, setStatRange] = useState();
   const [statValue, setStatValue] = useState();
   const [statsData, setStatsData] = React.useState(
     JSON.parse(localStorage.getItem("statData") || "[]")
   );
+  const [openUpdateModal , setOpenUpdateModal] = useState(false)
+  const [show, setShow] = useState(false);
+  const [createdBy, setCreatedBy] = useState("Admin");
+  const [modifiedBy, setModifiedBy] = useState("Admin");
 
+  const handleUpdatemodalClose = ()=> setOpenUpdateModal(false)
+  const handleUpdatemodalOpen = ()=> setOpenUpdateModal(true)
 
   useEffect(() => {
     // Fetch data from local storage
@@ -120,17 +126,7 @@ const TableComponent = () => {
     localStorage.setItem('statData', JSON.stringify(updatedData));
   };
 
-
-
   const handlemodalClose = () => setOpen(false);
-
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -163,16 +159,39 @@ const TableComponent = () => {
     navigate('/stats')
   }
 
+  const handleUpdateStatSave = () => {
+    const index = localStorage.getItem("adminStatIndex")
+    const updated = {
+      ...statdata[index],
+      statValue : statValue,
+      statRange: statRange,
+      modifiedBy : modifiedBy,
+    }
+    statdata[index] = updated
+    localStorage.setItem("statData" , JSON.stringify(statdata))
+    handleUpdatemodalClose()
+  }
+  const handleStatsUpdate = (i) => {
+    localStorage.setItem("adminStatIndex", i)
+    setStatValue(statdata[i].statValue)
+    setStatRange(statdata[i].statRange)
+    handleUpdatemodalOpen()
+  }
+
   function handleSave() {
     setStatsData((prev) => [
       ...prev,
       {
         statValue,
         statRange,
+        createdBy,
+        modifiedBy
       },
     ]);
     setStatRange("");
     setStatValue("");
+    console.log(createdBy, modifiedBy);
+    setShow(true)
     handlemodalClose();
   }
   useEffect(() => {
@@ -221,6 +240,7 @@ const TableComponent = () => {
         </Drawer>
         <Main>
           <DrawerHeader />
+          <Typography variant='h4'>Employee List</Typography>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -240,6 +260,8 @@ const TableComponent = () => {
                     <TableCell>{entry.emp_name}</TableCell>
                     <TableCell>{entry.emp_email}</TableCell>
                     <TableCell>{entry.emp_pass}</TableCell>
+                    <TableCell>{entry.createdBy}</TableCell>
+                    <TableCell>{entry.modifiedBy}</TableCell>
                     <TableCell>
                       <Button variant="contained" color="primary" onClick={() => handleStat(entry._id)}>
                         Stats
@@ -264,17 +286,18 @@ const TableComponent = () => {
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
           </TableContainer>
-        </Main>
-      </Box>
-      <Divider />
-      <Box>
+          <Divider />
+          <Typography variant='h4'>Parameter List</Typography>
       <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
                     <TableCell>Parameter</TableCell>
                     <TableCell>Max Value</TableCell>
+                    <TableCell>Created By</TableCell>
+                    <TableCell>Last Modified By</TableCell>
                     <TableCell>Delete</TableCell>
+                    <TableCell>Update</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -285,10 +308,15 @@ const TableComponent = () => {
                   <TableRow key={index}>
                     <TableCell>{entry.statValue}</TableCell>
                     <TableCell>{entry.statRange}</TableCell>
+                    <TableCell>{entry.createdBy}</TableCell>
+                    <TableCell>{entry.modifiedBy}</TableCell>
                     <TableCell>
                       <Button variant="contained" color="secondary" onClick={() => handleStatDelete(index)}>
                         Delete
                       </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant='contained' color='primary' onClick={()=> handleStatsUpdate(index)}>Update</Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -304,7 +332,10 @@ const TableComponent = () => {
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
           </TableContainer>
+        </Main>
       </Box>
+      <Divider />
+     
       <Modal
         open={open}
         onClose={handlemodalClose}
@@ -345,7 +376,50 @@ const TableComponent = () => {
           </Button>
         </Box>
       </Modal>
+      {
+        show ? <Alert severity='success'>Stat Added Successfully</Alert> : ''
+      }
 
+<Modal
+        open={openUpdateModal}
+        onClose={handleUpdatemodalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Typography variant='h4'>Update Stats</Typography>
+          <TextField
+            style={{ width: "300px", margin: "5px" }}
+            type="text"
+            label="type of Stat"
+            onChange={(e) => {
+              setStatValue(e.target.value);
+            }}
+            value={statValue}
+            variant="outlined"
+          />
+          <br />
+          <TextField
+            style={{ width: "300px", margin: "5px" }}
+            type="number"
+            label="Max range of Stat"
+            value={statRange}
+            onChange={(e) => {
+              setStatRange(e.target.value);
+            }}
+            variant="outlined"
+          />
+          <br />
+          <br />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleUpdateStatSave}
+          >
+            Save stat
+          </Button>
+        </Box>
+      </Modal>
     </>
   );
 };

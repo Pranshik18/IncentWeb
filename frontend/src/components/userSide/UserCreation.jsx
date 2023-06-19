@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -25,7 +25,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function CreateUser() {
+function UserSideCreateUser() {
   const [role, setRole] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -70,6 +70,15 @@ function CreateUser() {
       }
     }
   };
+    
+    useEffect(() => {
+       const id = localStorage.getItem("ID")
+        axios.get(`http://localhost:3012/employee/${id}`).then((res) => {
+            setCreatedBy(res.data.emp_name)
+            setModifiedBy(res.data.emp_name)
+        console.log(res.data);
+    })
+},[])
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -345,4 +354,4 @@ function CreateUser() {
   );
 }
 
-export default CreateUser;
+export default UserSideCreateUser;
