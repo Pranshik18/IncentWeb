@@ -9,6 +9,15 @@ import CardContent from "@mui/material/CardContent";
 import Slider from "@mui/material/Slider";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -19,7 +28,9 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     marginBottom: theme.spacing(2),
+    marginTop : theme.spacing(2),
     textAlign: "center",
+    color:'red',
   },
   mainCont: {
     display: "flex",
@@ -31,6 +42,7 @@ const useStyles = makeStyles((theme) => ({
   },
   btn: {
     boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+    margin:'10px'
   },
 }));
 
@@ -41,21 +53,22 @@ const CardComponent = () => {
   const [sliderValue, setSliderValue] = useState({});
   const [particularIndexData, setparticularIndexData] = useState({});
   const [modifiedBy, setModifiedBy] = useState("Admin");
+  const [tableData, setTableData] = useState([]);
   const index = localStorage.getItem("index");
   const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`http://localhost:3012/employee/${index}`).then((res) => {
       setparticularIndexData(res.data);
+      setTableData(res.data.emp_Stats);
     });
 
     setData(JSON.parse(localStorage.getItem("statData")));
   }, []);
-  console.log(sliderValue);
-  console.log(particularIndexData);
+  // console.log(sliderValue);
+  // console.log(particularIndexData);
 
   const handleSubmit = (e) => {
-    window.location.reload(true);
     console.log(data);
     const ValueArray = data.map((item) => ({
       StatType: item.statValue,
@@ -85,9 +98,11 @@ const CardComponent = () => {
         modifiedBy: modifiedBy,
       };
 
-      axios.put(`http://localhost:3012/employee/${index}`, updatedValue).then((res) => {
-        console.log("Success");
-      });
+      axios
+        .put(`http://localhost:3012/employee/${index}`, updatedValue)
+        .then((res) => {
+          console.log("Success");
+        });
     } else {
       // Add new stats for the month
       const updatedValue = {
@@ -96,12 +111,14 @@ const CardComponent = () => {
         modifiedBy: modifiedBy,
       };
 
-      axios.put(`http://localhost:3012/employee/${index}`, updatedValue).then((res) => {
-        console.log("Success");
-      });
+      axios
+        .put(`http://localhost:3012/employee/${index}`, updatedValue)
+        .then((res) => {
+          console.log("Success");
+        });
     }
   };
-
+  console.log(tableData);
   return (
     <Container>
       <Box>
@@ -176,6 +193,47 @@ const CardComponent = () => {
             Submit
           </Button>
         </div>
+        <Typography variant="h4" className={classes.title} gutterBottom>Previously Added Stats</Typography>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Months</TableCell>
+                <TableCell>Stat Name</TableCell>
+                <TableCell>Parameter Value</TableCell>
+                <TableCell>Parameter Max Value</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tableData.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.month}</TableCell>
+                  <TableCell>
+                    {item.ValueArray.map((item) => (
+                      <TableRow>
+                        <TableCell>{item.StatType}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    {item.ValueArray.map((item) => (
+                      <TableRow>
+                        <TableCell>{item.UserValue}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    {item.ValueArray.map((item) => (
+                      <TableRow>
+                        <TableCell>{item.UserMaxValue}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
     </Container>
   );
