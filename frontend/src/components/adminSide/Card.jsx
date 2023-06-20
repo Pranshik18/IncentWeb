@@ -27,11 +27,11 @@ const useStyles = makeStyles((theme) => ({
   },
   button: {
     width: "100%",
-    textAlign:"center"
+    textAlign: "center",
   },
   btn: {
     boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-  }
+  },
 }));
 
 const CardComponent = () => {
@@ -41,13 +41,13 @@ const CardComponent = () => {
   const [sliderValue, setSliderValue] = useState({});
   const [particularIndexData, setparticularIndexData] = useState({});
   const [modifiedBy, setModifiedBy] = useState("Admin");
-  const index = localStorage.getItem("index")
+  const index = localStorage.getItem("index");
   const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`http://localhost:3012/employee/${index}`).then((res) => {
-      setparticularIndexData(res.data)
-    })
+      setparticularIndexData(res.data);
+    });
 
     setData(JSON.parse(localStorage.getItem("statData")));
   }, []);
@@ -55,33 +55,53 @@ const CardComponent = () => {
   console.log(particularIndexData);
 
   const handleSubmit = (e) => {
-    window.location.reload(true)
+    window.location.reload(true);
     console.log(data);
     const ValueArray = data.map((item) => ({
       StatType: item.statValue,
       UserValue: sliderValue[item.statRange] || 0,
-      UserMaxValue : item.statRange || 0
+      UserMaxValue: item.statRange || 0,
     }));
     console.log(month);
     console.log(ValueArray);
 
-    const Value = {
-      month: month,
-      ValueArray: ValueArray
-    }
-    console.log(Value);
-    
     const newValue = {
-      ...particularIndexData,
-      emp_Stats: [...particularIndexData.emp_Stats, Value],
-      modifiedBy:modifiedBy
-    }
+      month: month,
+      ValueArray: ValueArray,
+    };
     console.log(newValue);
 
-    axios.put(`http://localhost:3012/employee/${index}`, newValue).then((res) => {
-      console.log("Success");
-    })
+    const existingMonthIndex = particularIndexData.emp_Stats.findIndex(
+      (stat) => stat.month === month
+    );
+    if (existingMonthIndex !== -1) {
+      // Update existing stats for the month
+      const updatedStats = particularIndexData.emp_Stats.map((stat, index) =>
+        index === existingMonthIndex ? newValue : stat
+      );
+      const updatedValue = {
+        ...particularIndexData,
+        emp_Stats: updatedStats,
+        modifiedBy: modifiedBy,
+      };
+
+      axios.put(`http://localhost:3012/employee/${index}`, updatedValue).then((res) => {
+        console.log("Success");
+      });
+    } else {
+      // Add new stats for the month
+      const updatedValue = {
+        ...particularIndexData,
+        emp_Stats: [...particularIndexData.emp_Stats, newValue],
+        modifiedBy: modifiedBy,
+      };
+
+      axios.put(`http://localhost:3012/employee/${index}`, updatedValue).then((res) => {
+        console.log("Success");
+      });
+    }
   };
+
   return (
     <Container>
       <Box>
@@ -96,15 +116,20 @@ const CardComponent = () => {
           className={classes.title}
         />
 
-        <div style={{display:'flex' , flexWrap:'wrap', width:"100%" , 
-                    justifyContent:'space-between',}}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            width: "100%",
+            justifyContent: "space-between",
+          }}
+        >
           {data.map((item) => {
             return (
-              <Grid>
+              <Grid key={item.statValue}>
                 <Card
-                  key={item.statValue}
                   sx={{
-                    minWidth:'300px',
+                    minWidth: "300px",
                     boxShadow: "20px 20px 40px grey",
                     m: 3,
                   }}
@@ -119,7 +144,9 @@ const CardComponent = () => {
                   </CardContent>
                   <CardActions>
                     <Box sx={{ width: "250" }}>
-                      <Typography>Rate Value: {sliderValue[item.statRange] || 0}</Typography>
+                      <Typography>
+                        Rate Value: {sliderValue[item.statRange] || 0}
+                      </Typography>
                       <Slider
                         min={0}
                         max={Number(item.statRange)}
@@ -141,8 +168,13 @@ const CardComponent = () => {
           })}
         </div>
         <div className={classes.button}>
-          <Button variant="contained" onClick={() => handleSubmit()} className={classes.btn}>
-          Submit</Button>
+          <Button
+            variant="contained"
+            onClick={() => handleSubmit()}
+            className={classes.btn}
+          >
+            Submit
+          </Button>
         </div>
       </Box>
     </Container>
